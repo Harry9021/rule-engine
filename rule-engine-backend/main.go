@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 	"net/http"
-
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"rule-engine-backend/rules"
+	"rule-engine-backend/monitoring"
 	"rule-engine-backend/db"
 )
 
@@ -16,8 +16,14 @@ func main() {
 	r.HandleFunc("/rules", rules.CreateRule).Methods("POST")
 	r.HandleFunc("/rules", rules.GetRules).Methods("GET")
 	r.HandleFunc("/event", rules.HandleEvent).Methods("POST")
+	r.HandleFunc("/rules", rules.UpdateRule).Methods("PUT")
+	r.HandleFunc("/rules", rules.DeleteRuleHandler).Methods("DELETE")
 
-	// Configure CORS
+	// Monitoring endpoints
+	r.HandleFunc("/monitoring/stats", monitoring.GetStatsHandler).Methods("GET")
+	r.HandleFunc("/monitoring/thresholds", monitoring.GetThresholdsHandler).Methods("GET")
+	r.HandleFunc("/monitoring/thresholds", monitoring.SetThresholdsHandler).Methods("POST")
+
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -25,7 +31,6 @@ func main() {
 		AllowCredentials: true,
 	})
 
-	// Create handler with CORS middleware
 	handler := c.Handler(r)
 
 	log.Println("🚀 Server started on http://localhost:8080")

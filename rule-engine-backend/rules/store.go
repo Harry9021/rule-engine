@@ -39,6 +39,15 @@ func GetRuleByID(db *sql.DB, id string) (Rule, bool, error) {
 	return rule, true, nil
 }
 
+func UpdateRuleInDB(db *sql.DB, rule Rule) error {
+	_, err := db.Exec("UPDATE rules SET condition = ?, action = ? WHERE id = ?", rule.Condition, rule.Action, rule.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+
 func DeleteRule(db *sql.DB, id string) error {
 	_, err := db.Exec("DELETE FROM rules WHERE id = ?", id)
 	return err

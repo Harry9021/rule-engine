@@ -1,24 +1,45 @@
 package rules
 
-var rules = make(map[string]Rule)
+import (
+	"database/sql"
+)
 
-func AddRule(rule Rule) {
-	rules[rule.ID] = rule
+func AddRule(db *sql.DB, rule Rule) error {
+	_, err := db.Exec("INSERT INTO rules (id, condition, action) VALUES (?, ?, ?)", rule.ID, rule.Condition, rule.Action)
+	return err
 }
 
-func GetAllRules() []Rule {
-	all := []Rule{}
-	for _, rule := range rules {
-		all = append(all, rule)
+func GetAllRules(db *sql.DB) ([]Rule, error) {
+	rows, err := db.Query("SELECT id, condition, action FROM rules")
+	if err != nil {
+		return nil, err
 	}
-	return all
+	defer rows.Close()
+
+	rules := []Rule{}
+	for rows.Next() {
+		var rule Rule
+		if err := rows.Scan(&rule.ID, &rule.Condition, &rule.Action); err != nil {
+			return nil, err
+		}
+		rules = append(rules, rule)
+	}
+	return rules, nil
 }
 
-func GetRuleByID(id string) (Rule, bool) {
-	rule, exists := rules[id]
-	return rule, exists
+func GetRuleByID(db *sql.DB, id string) (Rule, bool, error) {
+	var rule Rule
+	err := db.QueryRow("SELECT id, condition, action FROM rules WHERE id = ?", id).Scan(&rule.ID, &rule.Condition, &rule.Action)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return Rule{}, false, nil
+		}
+		return Rule{}, false, err
+	}
+	return rule, true, nil
 }
 
-func DeleteRule(id string) {
-	delete(rules, id)
+func DeleteRule(db *sql.DB, id string) error {
+	_, err := db.Exec("DELETE FROM rules WHERE id = ?", id)
+	return err
 }

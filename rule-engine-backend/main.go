@@ -7,11 +7,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"rule-engine-backend/rules"
-	// "rule-engine-backend/db"
+	"rule-engine-backend/db"
 )
 
 func main() {
-	// db.Init()
+	db.ConnectDB()
 	r := mux.NewRouter()
 	r.HandleFunc("/rules", rules.CreateRule).Methods("POST")
 	r.HandleFunc("/rules", rules.GetRules).Methods("GET")

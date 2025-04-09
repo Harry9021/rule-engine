@@ -19,6 +19,9 @@ const RuleForm = () => {
       setId("");
       setCondition("");
       setAction("");
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (err) {
       console.error(err);
       setMessage("❌ Failed to create rule.");

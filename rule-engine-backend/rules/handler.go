@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"rule-engine-backend/db"
 	"rule-engine-backend/engine"
 )
 
@@ -13,13 +14,38 @@ func CreateRule(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	AddRule(rule)
+
+	dbConn, err := db.ConnectDB()
+	if err != nil {
+		http.Error(w, "Failed to connect to DB", http.StatusInternalServerError)
+		return
+	}
+	defer dbConn.Close()
+
+	if err := AddRule(dbConn, rule); err != nil {
+		http.Error(w, "Failed to add rule", http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusCreated)
 	log.Printf("Rule created: %+v\n", rule)
 }
 
 func GetRules(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(GetAllRules())
+	dbConn, err := db.ConnectDB()
+	if err != nil {
+		http.Error(w, "Failed to connect to DB", http.StatusInternalServerError)
+		return
+	}
+	defer dbConn.Close()
+
+	rules, err := GetAllRules(dbConn)
+	if err != nil {
+		http.Error(w, "Failed to get rules", http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(rules)
 }
 
 func HandleEvent(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +55,20 @@ func HandleEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, rule := range GetAllRules() {
+	dbConn, err := db.ConnectDB()
+	if err != nil {
+		http.Error(w, "Failed to connect to DB", http.StatusInternalServerError)
+		return
+	}
+	defer dbConn.Close()
+
+	rules, err := GetAllRules(dbConn)
+	if err != nil {
+		http.Error(w, "Failed to get rules", http.StatusInternalServerError)
+		return
+	}
+
+	for _, rule := range rules {
 		if engine.EvaluateCondition(rule.Condition, event) {
 			engine.ExecuteAction(rule.Action)
 		}

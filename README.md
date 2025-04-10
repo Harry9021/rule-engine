@@ -124,6 +124,11 @@ npm run dev
 
 Runs the UI at `http://localhost:5173`.
 
+## 🖼️ UI Previews
+![Rule List UI + Monitoring UI](./assets/1.png)
+
+![Create Rule UI](./assets/2.png)
+
 ---
 
 ## 🚀 Future Enhancements

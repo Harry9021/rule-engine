@@ -144,7 +144,3 @@ Runs the UI at `http://localhost:5173`.
 ## 🙌 Author
 
 Made with 💻 + ☕ by [Hariom Ingle]
-
----
-
-## 📜 License
